@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Salah Surahs</title>
+
+<!-- PWA / App meta -->
+<meta name="theme-color" content="#0E1A1D">
+<meta name="background-color" content="#0E1A1D">
+<meta name="description" content="Salah companion for reading paired Surahs with large high-contrast transliteration text. Screen stays awake while you pray.">
+<meta name="application-name" content="Salah Surahs">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Salah Surahs">
+<meta name="msapplication-TileColor" content="#0E1A1D">
+<meta name="msapplication-TileImage" content="icons/icon-144.png">
+<meta name="msapplication-config" content="none">
+
+<!-- Icons -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-128.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1A1D;
+    --surface:#152528;
+    --surface-2:#1B2E32;
+    --ivory:#F3EDDD;
+    --ivory-dim:#C9C4B4;
+    --gold:#D3A94C;
+    --muted:#8AA098;
+    --hairline:rgba(243,237,221,.14);
+    --display:'Fraunces', Georgia, serif;
+    --body:'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ivory);
+    font-family:var(--body);
+    overscroll-behavior:none;
+  }
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  /* ---------- HOME ---------- */
+  #home{max-width:640px;margin:0 auto;padding:28px 18px 48px}
+  .home-head{padding:10px 4px 24px;border-bottom:1px solid var(--hairline);margin-bottom:20px}
+  .home-eyebrow{color:var(--gold);font-size:13px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}
+  .home-title{font-family:var(--display);font-weight:600;font-size:34px;line-height:1.1}
+  .home-sub{color:var(--muted);font-size:15px;margin-top:10px;line-height:1.5}
+  .pair-list{display:flex;flex-direction:column;gap:12px}
+  .pair-card{
+    width:100%;text-align:left;
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:14px;
+    padding:16px 18px;
+    display:flex;align-items:center;gap:16px;
+    transition:background .15s, border-color .15s;
+  }
+  .pair-card:active{background:var(--surface-2)}
+  .pair-num{
+    flex:none;width:44px;height:44px;border-radius:50%;
+    border:1.5px solid var(--gold);color:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-size:19px;font-weight:600;
+  }
+  .pair-names{flex:1;min-width:0}
+  .pair-row{display:flex;align-items:baseline;gap:10px;padding:3px 0}
+  .rakah-tag{flex:none;color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;width:26px}
+  .pair-surah{font-family:var(--display);font-size:20px;font-weight:500}
+  .pair-arrow{flex:none;color:var(--muted);font-size:20px}
+
+  /* ---------- READER ---------- */
+  #reader{display:none;height:100dvh;flex-direction:column}
+  #reader.open{display:flex}
+  #home.hidden{display:none}
+
+  .r-top{
+    flex:none;display:flex;align-items:center;gap:8px;
+    padding:10px 12px;border-bottom:1px solid var(--hairline);
+    background:var(--bg);
+  }
+  .r-back{
+    font-size:15px;color:var(--ivory-dim);
+    padding:12px 14px;border-radius:10px;background:var(--surface);
+    min-height:48px;
+  }
+  .r-pairname{flex:1;text-align:center;color:var(--muted);font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-font{display:flex;gap:8px}
+  .r-font button{
+    min-width:52px;min-height:48px;border-radius:10px;
+    background:var(--surface);color:var(--ivory);
+    font-size:19px;font-weight:700;
+  }
+
+  .r-tabs{flex:none;display:flex;border-bottom:1px solid var(--hairline)}
+  .r-tab{
+    flex:1;padding:14px 8px;min-height:56px;
+    color:var(--muted);font-size:15px;font-weight:700;
+    border-bottom:3px solid transparent;
+  }
+  .r-tab .t-rakah{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:400;margin-bottom:3px}
+  .r-tab.active{color:var(--ivory);border-bottom-color:var(--gold)}
+  .r-tab.active .t-rakah{color:var(--gold)}
+
+  #scroller{
+    flex:1;overflow-y:auto;padding:26px 20px 40vh;
+    scroll-behavior:smooth;
+  }
+  @media (prefers-reduced-motion: reduce){ #scroller{scroll-behavior:auto} }
+  .bismillah{
+    text-align:center;color:var(--gold);
+    font-family:var(--display);font-style:italic;
+    margin-bottom:1.2em;opacity:.9;
+    font-size:.62em;line-height:1.4;
+  }
+  .surah-title{
+    text-align:center;font-family:var(--display);font-weight:600;
+    font-size:.55em;letter-spacing:.06em;color:var(--ivory-dim);
+    margin-bottom:.4em;
+  }
+  #ayat{font-size:34px;line-height:1.55;font-weight:400}
+  .ayah{margin-bottom:.85em}
+  .ayah-mark{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:1.15em;height:1.15em;border-radius:50%;
+    border:1.5px solid var(--gold);color:var(--gold);
+    font-size:.42em;font-weight:700;
+    vertical-align:.25em;margin-left:.35em;
+    font-family:var(--body);
+  }
+  .tap-hint{
+    text-align:center;color:var(--muted);font-size:14px;
+    padding-top:24px;
+  }
+
+  .r-switch{
+    flex:none;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+    background:var(--bg);border-top:1px solid var(--hairline);
+  }
+  .r-switch button{
+    width:100%;min-height:76px;border-radius:16px;
+    background:var(--gold);color:#161307;
+    font-size:21px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .r-switch button:active{filter:brightness(1.08)}
+  .r-switch .sw-sub{display:block;font-size:12px;font-weight:400;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+  .sw-inner{text-align:center}
+</style>
+</head>
+<body>
+
+<main id="home">
+  <header class="home-head">
+    <div class="home-eyebrow">Salah companion</div>
+    <h1 class="home-title">Surah Pairs</h1>
+    <p class="home-sub">Pick tonight's pair. The reader uses large, high-contrast text so you can read the transliteration from standing height with the phone on the floor. The screen stays awake while you pray.</p>
+  </header>
+  <div class="pair-list" id="pairList"></div>
+</main>
+
+<section id="reader">
+  <div class="r-top">
+    <button class="r-back" id="btnBack">&#8592; Pairs</button>
+    <div class="r-pairname" id="pairLabel"></div>
+    <div class="r-font">
+      <button id="fontDown" aria-label="Smaller text">A&#8722;</button>
+      <button id="fontUp" aria-label="Bigger text">A+</button>
+    </div>
+  </div>
+
+  <div class="r-tabs">
+    <button class="r-tab" id="tab0"><span class="t-rakah">1st rakah</span><span class="t-name"></span></button>
+    <button class="r-tab" id="tab1"><span class="t-rakah">2nd rakah</span><span class="t-name"></span></button>
+  </div>
+
+  <div id="scroller">
+    <div id="ayat"></div>
+    <div class="tap-hint" id="tapHint">Tap the text to scroll &#8595;</div>
+  </div>
+
+  <div class="r-switch">
+    <button id="btnSwitch"><span class="sw-inner" id="switchInner"></span></button>
+  </div>
+</section>
+
+<script>
+const PAIRS = [
+  { n:1, s:[
+    { name:"At-Takathur", ayat:[
+      "Alhākumut-takāthur.","Ḥattā zurtumul-maqābir.","Kallā sawfa ta‘lamūn.","Thumma kallā sawfa ta‘lamūn.","Kallā law ta‘lamūna ‘ilmal-yaqīn.","Latarawunnal-jaḥīm.","Thumma latarawunnahā ‘aynal-yaqīn.","Thumma latus'alunna yawma'idhin ‘anin-na‘īm."
+    ]},
+    { name:"Al-Fil", ayat:[
+      "Alam tara kayfa fa‘ala rabbuka bi'aṣḥābil-fīl.","Alam yaj‘al kaydahum fī taḍlīl.","Wa arsala ‘alayhim ṭayran abābīl.","Tarmīhim biḥijāratin min sijjīl.","Faja‘alahum ka‘aṣfin ma'kūl."
+    ]}
+  ]},
+  { n:2, s:[
+    { name:"Al-Ma'un", ayat:[
+      "Ara'aytal-ladhī yukadhdhibu bid-dīn.","Fadhālikal-ladhī yadu‘‘ul-yatīm.","Wa lā yaḥuḍḍu ‘alā ṭa‘āmil-miskīn.","Fawaylun lil-muṣallīn.","Al-ladhīna hum ‘an ṣalātihim sāhūn.","Al-ladhīna hum yurā'ūn.","Wa yamna‘ūnal-mā‘ūn."
+    ]},
+    { name:"Al-Masad", ayat:[
+      "Tabbat yadā abī lahabin wa tabb.","Mā aghnā ‘anhu māluhū wa mā kasab.","Sayaṣlā nāran dhāta lahab.","Wamra'atuhū ḥammālatal-ḥaṭab.","Fī jīdihā ḥablun min masad."
+    ]}
+  ]},
+  { n:3, s:[
+    { name:"At-Tin", ayat:[
+      "Wat-tīni waz-zaytūn.","Wa ṭūri sīnīn.","Wa hādhal-baladil-amīn.","Laqad khalaqnal-insāna fī aḥsani taqwīm.","Thumma radadnāhu asfala sāfilīn.","Illal-ladhīna āmanū wa ‘amiluṣ-ṣāliḥāti falahum ajrun ghayru mamnūn.","Famā yukadhdhibuka ba‘du bid-dīn.","Alaysallāhu bi'aḥkamil-ḥākimīn."
+    ]},
+    { name:"Al-Qadr", ayat:[
+      "Innā anzalnāhu fī laylatil-qadr.","Wa mā adrāka mā laylatul-qadr.","Laylatul-qadri khayrun min alfi shahr.","Tanazzalul-malā'ikatu war-rūḥu fīhā bi'idhni rabbihim min kulli amr.","Salāmun hiya ḥattā maṭla‘il-fajr."
+    ]}
+  ]},
+  { n:4, s:[
+    { name:"Ash-Shams", ayat:[
+      "Wash-shamsi wa ḍuḥāhā.","Wal-qamari idhā talāhā.","Wan-nahāri idhā jallāhā.","Wal-layli idhā yaghshāhā.","Was-samā'i wa mā banāhā.","Wal-arḍi wa mā ṭaḥāhā.","Wa nafsin wa mā sawwāhā.","Fa'alhamahā fujūrahā wa taqwāhā.","Qad aflaḥa man zakkāhā.","Wa qad khāba man dassāhā.","Kadhdhabat thamūdu biṭaghwāhā.","Idhinba‘atha ashqāhā.","Faqāla lahum rasūlullāhi nāqatallāhi wa suqyāhā.","Fakadhdhabūhu fa‘aqarūhā fadamdama ‘alayhim rabbuhum bidhanbihim fasawwāhā.","Wa lā yakhāfu ‘uqbāhā."
+    ]},
+    { name:"Az-Zilzalah", ayat:[
+      "Idhā zulzilatil-arḍu zilzālahā.","Wa akhrajatil-arḍu athqālahā.","Wa qālal-insānu mā lahā.","Yawma'idhin tuḥaddithu akhbārahā.","Bi'anna rabbaka awḥā lahā.","Yawma'idhin yaṣdurun-nāsu ashtātan liyaraw a‘mālahum.","Faman ya‘mal mithqāla dharratin khayran yarah.","Wa man ya‘mal mithqāla dharratin sharran yarah."
+    ]}
+  ]},
+  { n:5, s:[
+    { name:"Ash-Sharh", ayat:[
+      "Alam nashraḥ laka ṣadrak.","Wa waḍa‘nā ‘anka wizrak.","Al-ladhī anqaḍa ẓahrak.","Wa rafa‘nā laka dhikrak.","Fa'inna ma‘al-‘usri yusrā.","Inna ma‘al-‘usri yusrā.","Fa'idhā faraghta fanṣab.","Wa ilā rabbika farghab."
+    ]},
+    { name:"Al-'Adiyat", ayat:[
+      "Wal-‘ādiyāti ḍabḥā.","Fal-mūriyāti qadḥā.","Fal-mughīrāti ṣubḥā.","Fa'atharna bihī naq‘ā.","Fawasaṭna bihī jam‘ā.","Innal-insāna lirabbihī lakanūd.","Wa innahū ‘alā dhālika lashahīd.","Wa innahū liḥubbil-khayri lashadīd.","Afalā ya‘lamu idhā bu‘thira mā fil-qubūr.","Wa ḥuṣṣila mā fiṣ-ṣudūr.","Inna rabbahum bihim yawma'idhin lakhabīr."
+    ]}
+  ]},
+  { n:6, s:[
+    { name:"Al-Qari'ah", ayat:[
+      "Al-qāri‘ah.","Mal-qāri‘ah.","Wa mā adrāka mal-qāri‘ah.","Yawma yakūnun-nāsu kal-farāshil-mabthūth.","Wa takūnul-jibālu kal-‘ihnil-manfūsh.","Fa'ammā man thaqulat mawāzīnuh.","Fahuwa fī ‘īshatin rāḍiyah.","Wa ammā man khaffat mawāzīnuh.","Fa'ummuhū hāwiyah.","Wa mā adrāka mā hiyah.","Nārun ḥāmiyah."
+    ]},
+    { name:"Al-'Asr", ayat:[
+      "Wal-‘aṣr.","Innal-insāna lafī khusr.","Illal-ladhīna āmanū wa ‘amiluṣ-ṣāliḥāti wa tawāṣaw bil-ḥaqqi wa tawāṣaw biṣ-ṣabr."
+    ]}
+  ]},
+  { n:7, s:[
+    { name:"Al-Humazah", ayat:[
+      "Waylun likulli humazatin lumazah.","Al-ladhī jama‘a mālan wa ‘addadah.","Yaḥsabu anna mālahū akhladah.","Kallā layunbadhanna fil-ḥuṭamah.","Wa mā adrāka mal-ḥuṭamah.","Nārullāhil-mūqadah.","Allatī taṭṭali‘u ‘alal-af'idah.","Innahā ‘alayhim mu'ṣadah.","Fī ‘amadim mumaddadah."
+    ]},
+    { name:"Quraysh", ayat:[
+      "Li'īlāfi quraysh.","Īlāfihim riḥlatash-shitā'i waṣ-ṣayf.","Falya‘budū rabba hādhal-bayt.","Al-ladhī aṭ‘amahum min jū‘in wa āmanahum min khawf."
+    ]}
+  ]},
+  { n:8, s:[
+    { name:"Al-Kafirun", ayat:[
+      "Qul yā ayyuhal-kāfirūn.","Lā a‘budu mā ta‘budūn.","Wa lā antum ‘ābidūna mā a‘bud.","Wa lā ana ‘ābidun mā ‘abadtum.","Wa lā antum ‘ābidūna mā a‘bud.","Lakum dīnukum wa liya dīn."
+    ]},
+    { name:"An-Nasr", ayat:[
+      "Idhā jā'a naṣrullāhi wal-fatḥ.","Wa ra'aytan-nāsa yadkhulūna fī dīnillāhi afwājā.","Fasabbiḥ biḥamdi rabbika wastaghfirh, innahū kāna tawwābā."
+    ]}
+  ]},
+  { n:9, s:[
+    { name:"Al-Kawthar", ayat:[
+      "Innā a‘ṭaynākal-kawthar.","Faṣalli lirabbika wanḥar.","Inna shāni'aka huwal-abtar."
+    ]},
+    { name:"Al-Ikhlas", ayat:[
+      "Qul huwallāhu aḥad.","Allāhuṣ-ṣamad.","Lam yalid wa lam yūlad.","Wa lam yakun lahū kufuwan aḥad."
+    ]}
+  ]},
+  { n:10, s:[
+    { name:"Al-Falaq", ayat:[
+      "Qul a‘ūdhu birabbil-falaq.","Min sharri mā khalaq.","Wa min sharri ghāsiqin idhā waqab.","Wa min sharrin-naffāthāti fil-‘uqad.","Wa min sharri ḥāsidin idhā ḥasad."
+    ]},
+    { name:"An-Nas", ayat:[
+      "Qul a‘ūdhu birabbin-nās.","Malikin-nās.","Ilāhin-nās.","Min sharril-waswāsil-khannās.","Al-ladhī yuwaswisu fī ṣudūrin-nās.","Minal-jinnati wan-nās."
+    ]}
+  ]}
+];
+
+const $ = id => document.getElementById(id);
+let currentPair = null;
+let currentSurah = 0;
+let fontSize = 34;
+const FONT_MIN = 22, FONT_MAX = 76, FONT_STEP = 4;
+
+/* ---- home list ---- */
+const list = $("pairList");
+PAIRS.forEach((p, idx) => {
+  const b = document.createElement("button");
+  b.className = "pair-card";
+  b.innerHTML =
+    '<span class="pair-num">' + p.n + '</span>' +
+    '<span class="pair-names">' +
+      '<span class="pair-row"><span class="rakah-tag">1st</span><span class="pair-surah">' + p.s[0].name + '</span></span>' +
+      '<span class="pair-row"><span class="rakah-tag">2nd</span><span class="pair-surah">' + p.s[1].name + '</span></span>' +
+    '</span>' +
+    '<span class="pair-arrow">&#8250;</span>';
+  b.addEventListener("click", () => openPair(idx));
+  list.appendChild(b);
+});
+
+/* ---- wake lock ---- */
+let wakeLock = null;
+async function requestWakeLock(){
+  try{
+    if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen");
+  }catch(e){ /* not critical */ }
+}
+function releaseWakeLock(){
+  if (wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && currentPair !== null) requestWakeLock();
+});
+
+/* ---- reader ---- */
+function openPair(idx){
+  currentPair = idx;
+  currentSurah = 0;
+  $("home").classList.add("hidden");
+  $("reader").classList.add("open");
+  $("pairLabel").textContent = "Pair " + PAIRS[idx].n;
+  requestWakeLock();
+  render();
+}
+function closeReader(){
+  currentPair = null;
+  $("reader").classList.remove("open");
+  $("home").classList.remove("hidden");
+  releaseWakeLock();
+}
+
+function render(){
+  const pair = PAIRS[currentPair];
+  const surah = pair.s[currentSurah];
+
+  document.querySelector("#tab0 .t-name").textContent = pair.s[0].name;
+  document.querySelector("#tab1 .t-name").textContent = pair.s[1].name;
+  $("tab0").classList.toggle("active", currentSurah === 0);
+  $("tab1").classList.toggle("active", currentSurah === 1);
+
+  const ayatEl = $("ayat");
+  ayatEl.style.fontSize = fontSize + "px";
+  let html = '<div class="surah-title">' + surah.name + '</div>';
+  html += '<div class="bismillah">Bismillāhir-Raḥmānir-Raḥīm</div>';
+  surah.ayat.forEach((a, i) => {
+    html += '<div class="ayah">' + a + '<span class="ayah-mark">' + (i+1) + '</span></div>';
+  });
+  ayatEl.innerHTML = html;
+
+  const other = pair.s[currentSurah === 0 ? 1 : 0];
+  $("switchInner").innerHTML =
+    '<span class="sw-sub">' + (currentSurah === 0 ? "2nd rakah" : "1st rakah") + '</span>' +
+    (currentSurah === 0 ? other.name + " &#8594;" : "&#8592; " + other.name);
+
+  const sc = $("scroller");
+  sc.scrollTop = 0;
+  updateHint();
+}
+
+function updateHint(){
+  const sc = $("scroller");
+  $("tapHint").style.display = (sc.scrollHeight > sc.clientHeight + 40) ? "block" : "none";
+}
+
+/* tap text area = scroll one screen; at the end it loops back to top */
+$("scroller").addEventListener("click", () => {
+  const sc = $("scroller");
+  const nearEnd = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 60;
+  if (nearEnd) sc.scrollTop = 0;
+  else sc.scrollBy({ top: sc.clientHeight * 0.8, behavior: "smooth" });
+});
+
+$("tab0").addEventListener("click", () => { currentSurah = 0; render(); });
+$("tab1").addEventListener("click", () => { currentSurah = 1; render(); });
+$("btnSwitch").addEventListener("click", () => { currentSurah = currentSurah === 0 ? 1 : 0; render(); });
+$("btnBack").addEventListener("click", closeReader);
+
+$("fontUp").addEventListener("click", () => {
+  fontSize = Math.min(FONT_MAX, fontSize + FONT_STEP);
+  $("ayat").style.fontSize = fontSize + "px";
+  updateHint();
+});
+$("fontDown").addEventListener("click", () => {
+  fontSize = Math.max(FONT_MIN, fontSize - FONT_STEP);
+  $("ayat").style.fontSize = fontSize + "px";
+  updateHint();
+});
+
+/* ---- Service Worker registration ---- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered', reg.scope))
+      .catch(err => console.warn('SW registration failed', err));
+  });
+}
+</script>
+</body>
+</html>
