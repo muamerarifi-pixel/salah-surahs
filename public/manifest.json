@@ -3,13 +3,16 @@
   "short_name": "Salah Surahs",
   "description": "Salah companion for reading paired Surahs with large high-contrast transliteration text. Screen stays awake while you pray.",
   "start_url": "./",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0E1A1D",
   "theme_color": "#0E1A1D",
   "lang": "en",
-  "categories": ["lifestyle", "education", "books"],
+  "categories": [
+    "lifestyle",
+    "education",
+    "books"
+  ],
   "icons": [
     {
       "src": "icons/icon-72.png",
