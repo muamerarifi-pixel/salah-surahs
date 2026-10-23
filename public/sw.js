@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salah-surahs-v2';
+const CACHE_NAME = 'salah-surahs-v3';
 const ASSETS = [
   './',
   './manifest.json',

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Salah Surahs</title>
 
 <!-- PWA / App meta -->
@@ -162,6 +162,8 @@
   .r-switch button:active{filter:brightness(1.08)}
   .r-switch .sw-sub{display:block;font-size:12px;font-weight:400;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
   .sw-inner{text-align:center}
+  /* full screen on phones: content stays clear of the camera */
+  body{padding-top:env(safe-area-inset-top,0px)}
 </style>
 </head>
 <body>
